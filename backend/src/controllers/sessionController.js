@@ -1,6 +1,8 @@
 import prisma from '../lib/prisma.js';
 import { generateUniqueCode, generateCallIndices } from '../lib/sessionCode.js';
 
+const cleanCode = (c) => (c ? String(c).trim().toUpperCase().replace(/-/g, '') : '');
+
 const levelConfigs = {
     junior: { levelName: 'Júnior', totalCalls: 5,  timePerCall: 30, lives: 5 },
     pleno:  { levelName: 'Pleno',  totalCalls: 8,  timePerCall: 20, lives: 3 },
@@ -42,7 +44,7 @@ export async function createSession(req, res) {
 // GET /sessions/:code
 export async function getSession(req, res) {
     const session = await prisma.session.findUnique({
-        where: { code: req.params.code },
+        where: { code: cleanCode(req.params.code) },
         include: { players: { select: { id: true, name: true, status: true } } },
     });
 
@@ -74,7 +76,7 @@ export async function joinSession(req, res) {
         return res.status(400).json({ error: 'O nome deve ter no máximo 30 caracteres' });
     }
 
-    const code = req.params.code ? req.params.code.trim().toUpperCase() : '';
+    const code = cleanCode(req.params.code);
 
     const session = await prisma.session.findUnique({
         where: { code },
@@ -126,7 +128,7 @@ export async function joinSession(req, res) {
 // POST /sessions/:code/start
 export async function startSession(req, res) {
     const session = await prisma.session.findUnique({
-        where: { code: req.params.code },
+        where: { code: cleanCode(req.params.code) },
     });
 
     if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
@@ -156,7 +158,7 @@ export async function startSession(req, res) {
 // GET /sessions/:code/ranking
 export async function getSessionRanking(req, res) {
     const session = await prisma.session.findUnique({
-        where: { code: req.params.code },
+        where: { code: cleanCode(req.params.code) },
         include: {
             players: {
                 orderBy: [{ score: 'desc' }, { finishedAt: 'asc' }],
@@ -183,7 +185,7 @@ export async function getSessionRanking(req, res) {
 // GET /sessions/:code/report
 export async function getSessionReport(req, res) {
     const session = await prisma.session.findUnique({
-        where: { code: req.params.code },
+        where: { code: cleanCode(req.params.code) },
         include: {
             players: {
                 include: { answers: true },
@@ -249,7 +251,7 @@ export async function getSessionReport(req, res) {
 // POST /sessions/:code/end
 export async function endSession(req, res) {
     const session = await prisma.session.findUnique({
-        where: { code: req.params.code },
+        where: { code: cleanCode(req.params.code) },
     });
 
     if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });

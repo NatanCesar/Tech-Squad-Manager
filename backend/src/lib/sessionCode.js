@@ -8,7 +8,7 @@ const TOTAL_CALLS = allCalls.length;
 function generateCode() {
     const l = () => LETTERS[Math.floor(Math.random() * LETTERS.length)];
     const d = () => DIGITS[Math.floor(Math.random() * DIGITS.length)];
-    return `${l()}${l()}${l()}-${d()}${d()}${d()}`;
+    return `${l()}${l()}${l()}${d()}${d()}${d()}`;
 }
 
 export async function generateUniqueCode() {

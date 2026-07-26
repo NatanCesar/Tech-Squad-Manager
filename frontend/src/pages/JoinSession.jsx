@@ -16,7 +16,7 @@ export default function JoinSession() {
 
     async function handleJoin() {
         const trimName = name.trim();
-        const trimCode = code.trim().toUpperCase();
+        const trimCode = code.trim().toUpperCase().replace(/-/g, '');
 
         if (!trimName) return setError('Digite seu nome.');
         if (!trimCode) return setError('Digite o código da turma.');
@@ -71,11 +71,11 @@ export default function JoinSession() {
                     <input
                         id="sessionCode"
                         type="text"
-                        placeholder="ABC-123"
+                        placeholder="ABC123"
                         value={code}
                         onChange={e => setCode(e.target.value.toUpperCase())}
                         onKeyDown={e => e.key === 'Enter' && handleJoin()}
-                        maxLength={7}
+                        maxLength={6}
                         className="input-code"
                     />
                 </div>
