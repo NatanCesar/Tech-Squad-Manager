@@ -121,7 +121,7 @@ function reducer(state, action) {
         case 'CLOSE_FEEDBACK':
             return { ...state, feedback: null };
         case 'END_GAME':
-            return { ...state, gameOver: true };
+            return { ...state, gameOver: true, feedback: null };
         default:
             return state;
     }
@@ -231,33 +231,51 @@ export default function Game() {
 
     useEffect(() => {
         if (!gameOver || !gameConfig) return;
-        const totalAnswered = gameConfig.totalCalls - remainingCalls;
-        const correctAnswers = score / 100;
-        const accuracy = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
-        const data = { score, totalAnswered, correctAnswers, levelName: gameConfig.levelName };
-        setReportData(data);
 
-        if (isClassMode && playerId) {
-            api.finishPlayer(playerId, {
-                score,
-                livesLeft: lives,
-                correctAnswers,
-                totalAnswered,
-                answers: answersLog,
-            }).then(res => {
-                if (res.rankings) setSessionRankings(res.rankings);
-            }).catch(() => {});
-            navigate('/class-ranking');
-        } else {
-            addRankingEntry({
-                name: playerName || 'Anônimo',
-                score,
-                levelName: gameConfig.levelName,
-                accuracy,
-                date: new Date().toLocaleDateString('pt-BR'),
-            });
-            navigate('/report');
+        let isSubscribed = true;
+
+        async function handleFinish() {
+            const totalAnswered = gameConfig.totalCalls - remainingCalls;
+            const correctAnswers = score / 100;
+            const accuracy = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
+            const data = { score, totalAnswered, correctAnswers, levelName: gameConfig.levelName };
+            setReportData(data);
+
+            if (isClassMode && playerId) {
+                try {
+                    const res = await api.finishPlayer(playerId, {
+                        score,
+                        livesLeft: lives,
+                        correctAnswers,
+                        totalAnswered,
+                        answers: answersLog,
+                    });
+                    if (res && res.rankings && isSubscribed) {
+                        setSessionRankings(res.rankings);
+                    }
+                } catch (err) {
+                    console.error('Erro ao finalizar jogador:', err);
+                }
+                if (isSubscribed) {
+                    navigate('/class-ranking');
+                }
+            } else {
+                addRankingEntry({
+                    name: playerName || 'Anônimo',
+                    score,
+                    levelName: gameConfig.levelName,
+                    accuracy,
+                    date: new Date().toLocaleDateString('pt-BR'),
+                });
+                navigate('/report');
+            }
         }
+
+        handleFinish();
+
+        return () => {
+            isSubscribed = false;
+        };
     }, [gameOver, addRankingEntry, answersLog, gameConfig, isClassMode, lives, navigate, playerId, playerName, remainingCalls, score, setReportData, setSessionRankings]);
 
     // Resposta via drop

@@ -46,6 +46,13 @@ export default function ClassRanking() {
     const [loading, setLoading] = useState(!sessionRankings || sessionRankings.length === 0);
 
     useEffect(() => {
+        if (sessionRankings && sessionRankings.length > 0) {
+            setRankings(sessionRankings);
+            setLoading(false);
+        }
+    }, [sessionRankings]);
+
+    useEffect(() => {
         if (!sessionCode) {
             navigate('/');
             return;
@@ -53,32 +60,50 @@ export default function ClassRanking() {
 
         connectToSession(sessionCode, playerId, 'player');
 
-        api.getRanking(sessionCode)
-            .then(data => {
-                if (data.rankings) setRankings(data.rankings);
-                if (data.status === 'ENDED') setAllFinished(true);
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false));
+        const fetchRanking = () => {
+            api.getRanking(sessionCode)
+                .then(data => {
+                    if (data.rankings) setRankings(data.rankings);
+                    if (data.status === 'ENDED') setAllFinished(true);
+                })
+                .catch(() => {})
+                .finally(() => setLoading(false));
+        };
+
+        fetchRanking();
 
         const socket = getSocket();
-        socket.on('session:ranking_updated', ({ rankings }) => {
+        const handleRankingUpdated = ({ rankings }) => {
             setRankings(rankings);
             setLoading(false);
-        });
-        socket.on('session:all_finished', ({ rankings }) => {
+        };
+        const handleAllFinished = ({ rankings }) => {
             setRankings(rankings);
             setAllFinished(true);
             setLoading(false);
-        });
-        socket.on('session:ended', () => setAllFinished(true));
+        };
+        const handleEnded = () => setAllFinished(true);
+
+        socket.on('connect', fetchRanking);
+        socket.on('session:ranking_updated', handleRankingUpdated);
+        socket.on('session:all_finished', handleAllFinished);
+        socket.on('session:ended', handleEnded);
+
+        // Polling de contingência para redes móveis com oscilação
+        const pollInterval = setInterval(() => {
+            if (!allFinished) {
+                fetchRanking();
+            }
+        }, 5000);
 
         return () => {
-            socket.off('session:ranking_updated');
-            socket.off('session:all_finished');
-            socket.off('session:ended');
+            clearInterval(pollInterval);
+            socket.off('connect', fetchRanking);
+            socket.off('session:ranking_updated', handleRankingUpdated);
+            socket.off('session:all_finished', handleAllFinished);
+            socket.off('session:ended', handleEnded);
         };
-    }, [sessionCode, playerId, navigate]);
+    }, [sessionCode, playerId, navigate, allFinished]);
 
     function handleLeave() {
         disconnectSocket();

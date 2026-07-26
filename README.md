@@ -101,69 +101,79 @@ Tech-Squad-Manager/
 
 ---
 
-### 1. Clonar o Repositório
+### ⚡ Modo Rápido (Execução Simplificada)
 
+1. **Instalar todas as dependências (Backend e Frontend):**
+   ```bash
+   npm run setup
+   ```
+
+2. **Iniciar Servidores Backend e Frontend:**
+   ```bash
+   npm run dev
+   ```
+   > 🚀 O script detectará automaticamente o seu **IP local** e exibirá no terminal o link pronto para a turma acessar!
+
+---
+
+## 🌐 Hospedagem em Rede Local / Offline (Sem Internet)
+
+O **Tech Squad Manager** pode ser hospedado localmente no seu computador para jogar em salas de aula, laboratórios ou eventos **sem depender de conexão com a internet**. Basta que os dispositivos estejam na **mesma rede Wi-Fi ou cabo (LAN)**.
+
+### 📋 Passo a Passo para o Anfitrião (Host)
+
+1. **Conecte na mesma rede:** Certifique-se de que o computador hospedeiro e os celulares/notebooks dos jogadores estão no mesmo Wi-Fi ou roteador local.
+2. **Inicie o sistema:** Na raiz do projeto, execute:
+   ```bash
+   npm run dev
+   ```
+3. **Compartilhe o Link gerado:** O terminal exibirá um painel com o seu IP local e o link exato:
+   ```text
+   ===============================================================
+   🎮  TECH SQUAD MANAGER — SERVIDOR DE REDE LOCAL
+   ===============================================================
+
+   📌 Seu IP Local: 192.168.1.15
+
+   👉 Link para a TURMA conectar (copie e envie):
+      http://192.168.1.15:5173/Tech-Squad-Manager/
+
+   ⚙️  Backend rodando em: http://192.168.1.15:3001
+   ===============================================================
+   ```
+4. **Pronto!** Os alunos/jogadores só precisam abrir o link no navegador para criar e entrar nas salas.
+
+---
+
+### 🛠️ Resolução de Problemas Comuns em Rede Local
+
+* 🧱 **Outras pessoas não conseguem abrir o link?**
+  * **Firewall:** O Firewall do computador pode bloquear conexões de entrada. Permita a passagem do Node.js/Vite ou libere as portas `5173` (Frontend) e `3001` (Backend).
+  * **Mesma Rede:** Verifique se os jogadores não estão navegando via 4G/5G ou em uma rede Wi-Fi diferente (ex: Wi-Fi Visitantes).
+  * **Isolamento de AP (Wi-Fi de Escolas/Empresas):** Algumas redes Wi-Fi institucionais ativam o "AP Isolation" (Isolamento de Pontos de Acesso), que impede os dispositivos de se comunicarem entre si. Se estiver em uma rede restrita, crie um **Roteador Wi-Fi pelo próprio celular (Hotspot)** ou use um roteador local.
+
+---
+
+### 🛠️ Execução Manual (Modo Tradicional)
+
+Caso prefira rodar os serviços em terminais separados:
+
+#### 1. Executar o Backend
 ```bash
-git clone https://github.com/NatanCesar/Tech-Squad-Manager.git
-cd Tech-Squad-Manager
+cd backend
+npm install
+npm run db:migrate
+npm run dev
 ```
+> Servidor em `http://localhost:3001` (ou `http://SEU_IP:3001`)
 
----
-
-### 2. Configurar e Executar o Backend
-
-1. Entre na pasta do backend:
-   ```bash
-   cd backend
-   ```
-
-2. Instale as dependências:
-   ```bash
-   npm install
-   ```
-
-3. Crie o arquivo `.env` baseado no `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. Ajuste a variável `DATABASE_URL` no `.env` com suas credenciais do PostgreSQL:
-   ```env
-   DATABASE_URL="postgresql://usuario:senha@localhost:5432/tech_squad_manager"
-   FRONTEND_ORIGIN="*"
-   PORT=3001
-   ```
-
-5. Execute as migrações do banco de dados e gere o cliente Prisma:
-   ```bash
-   npm run db:migrate
-   ```
-
-6. Inicie o servidor em modo de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-   > O servidor estará rodando em `http://localhost:3001`
-
----
-
-### 3. Configurar e Executar o Frontend
-
-1. Abra um novo terminal e acesse a pasta do frontend:
-   ```bash
-   cd frontend
-   ```
-
-2. Instale as dependências:
-   ```bash
-   npm install
-   ```
-
-3. Inicie a aplicação React:
-   ```bash
-   npm run dev
-   ```
-   > A aplicação estará disponível em `http://localhost:5173/Tech-Squad-Manager/`
+#### 2. Executar o Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+> Aplicação em `http://localhost:5173/Tech-Squad-Manager/` (ou `http://SEU_IP:5173/Tech-Squad-Manager/`)
 
 ---
 

@@ -28,7 +28,8 @@
       "Bash(npm --prefix frontend run build)",
       "Bash(npx prisma *)",
       "Bash(node -c backend/src/lib/sessionCode.js backend/src/controllers/sessionController.js)",
-      "Bash(npm --prefix /home/natan/Documentos/code/Tech-Squad-Manager/frontend run build)"
+      "Bash(npm --prefix /home/natan/Documentos/code/Tech-Squad-Manager/frontend run build)",
+      "Bash(node scripts/dev.js)"
     ]
   }
 }

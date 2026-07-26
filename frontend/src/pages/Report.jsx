@@ -53,6 +53,9 @@ export default function Report() {
                     <button className="btn btn-start" onClick={() => navigate('/select-difficulty')}>
                         Jogar Novamente
                     </button>
+                    <button className="btn btn-teacher" onClick={() => navigate('/ranking')}>
+                        Ver Ranking
+                    </button>
                     <button className="btn btn-about" onClick={() => navigate('/')}>
                         Voltar ao Menu
                     </button>
