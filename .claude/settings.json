@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e 'import\\('\\\\''@prisma/client'\\\\''\\).then\\(async \\({PrismaClient}\\)=>{const p=new PrismaClient\\(\\);try{const n=await p.session.count\\(\\);console.log\\('\\\\''OK conectou, sessions ='\\\\'',n\\);}catch\\(e\\){console.log\\('\\\\''ERRO:'\\\\'',e.message.split\\('\\\\''\\\\n'\\\\''\\)[0]\\);}finally{await p.$disconnect\\(\\);}}\\)')",
+      "Bash(node -e 'import\\('\\\\''@prisma/client'\\\\''\\).then\\(async \\({PrismaClient}\\)=>{const p=new PrismaClient\\(\\);try{await p.session.count\\(\\);console.log\\('\\\\''OK'\\\\''\\);}catch\\(e\\){console.log\\('\\\\''FULL ERR:'\\\\'',JSON.stringify\\(e.message\\)\\);}finally{await p.$disconnect\\(\\);}}\\)')",
+      "Bash(psql -h 127.0.0.1 -U postgres -lqt)",
+      "Bash(export PGPASSWORD=postgres)",
+      "Bash(psql -h 127.0.0.1 -U postgres -c \"SELECT 1;\")",
+      "Bash(psql -h 127.0.0.1 -U postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='bncc_play';\")",
+      "Bash(psql -U natan -d postgres -tAc \"SELECT current_user;\")",
+      "Bash(sudo -n -u postgres psql -tAc \"SELECT rolname FROM pg_roles;\")",
+      "Bash(PGPASSWORD=natan psql -h 127.0.0.1 -U natan -d postgres -tAc \"SELECT 1;\")",
+      "Bash(PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -d postgres -tAc \"SELECT version\\(\\);\")",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -tAc \"SELECT 1;\")",
+      "Bash(PGPASSWORD=postgres psql -U postgres -d postgres -tAc \"SELECT 1;\")",
+      "Read(//home/natan/**)",
+      "Bash(pkill -f \"src/server.js\")",
+      "Bash(nohup npm run dev)",
+      "Bash(curl -s -m 3 http://localhost:3001/health)",
+      "Bash(curl -s -m 5 -X POST http://localhost:3001/api/sessions -H 'Content-Type: application/json' -d '{\"difficulty\":\"junior\"}')",
+      "Bash(npm run *)",
+      "Bash(git check-ignore *)",
+      "Bash(awk '{print $1}')",
+      "Bash(node --check backend/src/server.js backend/src/controllers/playerController.js backend/src/controllers/sessionController.js backend/src/data/calls.js)",
+      "Bash(npm install *)",
+      "Bash(node --check src/server.js src/controllers/playerController.js src/controllers/sessionController.js src/data/calls.js src/lib/sessionCode.js)",
+      "Bash(node -c backend/src/server.js backend/src/socket/handlers.js backend/src/controllers/sessionController.js backend/src/controllers/playerController.js)",
+      "Bash(npm --prefix frontend run build)"
+    ]
+  }
+}

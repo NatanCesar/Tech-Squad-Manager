@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  status      SessionStatus @default(WAITING)
+  difficulty  String
+  totalCalls  Int
+  timePerCall Int
+  lives       Int
+  levelName   String
+  callIndices Int[]
+  createdAt   DateTime      @default(now())
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  players     Player[]
+}
+
+enum SessionStatus {
+  WAITING
+  PLAYING
+  ENDED
+}
+
+model Player {
+  id             String       @id @default(cuid())
+  name           String
+  status         PlayerStatus @default(WAITING)
+  score          Int          @default(0)
+  livesLeft      Int
+  correctAnswers Int          @default(0)
+  totalAnswered  Int          @default(0)
+  joinedAt       DateTime     @default(now())
+  finishedAt     DateTime?
+
+  sessionId      String
+  session        Session      @relation(fields: [sessionId], references: [id])
+  answers        Answer[]
+
+  @@unique([sessionId, name])
+}
+
+enum PlayerStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
+
+model Answer {
+  id          String   @id @default(cuid())
+  callIndex   Int
+  chosenRole  String
+  correctRole String
+  isCorrect   Boolean
+  timeSpent   Int
+  answeredAt  DateTime @default(now())
+
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id])
+}
