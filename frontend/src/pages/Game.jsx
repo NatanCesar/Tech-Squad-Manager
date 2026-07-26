@@ -83,6 +83,7 @@ function reducer(state, action) {
         case 'TICK':
             return { ...state, timeLeft: state.timeLeft - 1 };
         case 'CORRECT_ANSWER':
+            if (state.feedback !== null) return state;
             return {
                 ...state,
                 score: state.score + 100,
@@ -101,6 +102,7 @@ function reducer(state, action) {
                 },
             };
         case 'WRONG_ANSWER':
+            if (state.feedback !== null) return state;
             return {
                 ...state,
                 lives: state.lives - 1,
@@ -159,6 +161,7 @@ export default function Game() {
     const timerRef = useRef(null);
     const callCardRef = useRef(null);
     const touchCloneRef = useRef(null);
+    const isAnsweringRef = useRef(false);
 
     const score = state?.score ?? 0;
     const lives = state?.lives ?? 0;
@@ -194,6 +197,7 @@ export default function Game() {
     useEffect(() => {
         if (!gameConfig || initialLoadDone.current) return;
         initialLoadDone.current = true;
+        isAnsweringRef.current = false;
         dispatch({ type: 'LOAD_CALL', timePerCall: gameConfig.timePerCall });
     }, [gameConfig]);
 
@@ -208,18 +212,19 @@ export default function Game() {
 
     // Timeout
     useEffect(() => {
-        if (timeLeft <= 0 && currentCall && !feedback && gameConfig) {
+        if (timeLeft <= 0 && currentCall && !feedback && gameConfig && !isAnsweringRef.current) {
+            isAnsweringRef.current = true;
             clearInterval(timerRef.current);
             const currentCallIndex = (callIndices ?? [])[callIndex - 1] ?? (callIndex - 1);
             const newLives = lives - 1;
             const newScore = score;
             const answersCount = answersLog.length + 1;
-            const correctCount = score / 100;
+            const correctCount = answersLog.filter(a => a.isCorrect).length;
 
             dispatch({ type: 'WRONG_ANSWER', chosenRole: null, callIndex: currentCallIndex, timeSpent: gameConfig.timePerCall });
             emitProgress(newScore, newLives, answersCount, correctCount);
         }
-    }, [timeLeft, currentCall, feedback, callIndex, callIndices, gameConfig, lives, score, answersLog.length, emitProgress]);
+    }, [timeLeft, currentCall, feedback, callIndex, callIndices, gameConfig, lives, score, answersLog, emitProgress]);
 
     // Fim de jogo
     useEffect(() => {
@@ -235,16 +240,17 @@ export default function Game() {
         let isSubscribed = true;
 
         async function handleFinish() {
-            const totalAnswered = gameConfig.totalCalls - remainingCalls;
-            const correctAnswers = score / 100;
+            const totalAnswered = answersLog.length;
+            const correctAnswers = answersLog.filter(a => a.isCorrect).length;
+            const finalScore = correctAnswers * 100;
             const accuracy = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
-            const data = { score, totalAnswered, correctAnswers, levelName: gameConfig.levelName };
+            const data = { score: finalScore, totalAnswered, correctAnswers, levelName: gameConfig.levelName };
             setReportData(data);
 
             if (isClassMode && playerId) {
                 try {
                     const res = await api.finishPlayer(playerId, {
-                        score,
+                        score: finalScore,
                         livesLeft: lives,
                         correctAnswers,
                         totalAnswered,
@@ -262,7 +268,7 @@ export default function Game() {
             } else {
                 addRankingEntry({
                     name: playerName || 'Anônimo',
-                    score,
+                    score: finalScore,
                     levelName: gameConfig.levelName,
                     accuracy,
                     date: new Date().toLocaleDateString('pt-BR'),
@@ -276,19 +282,21 @@ export default function Game() {
         return () => {
             isSubscribed = false;
         };
-    }, [gameOver, addRankingEntry, answersLog, gameConfig, isClassMode, lives, navigate, playerId, playerName, remainingCalls, score, setReportData, setSessionRankings]);
+    }, [gameOver, addRankingEntry, answersLog, gameConfig, isClassMode, lives, navigate, playerId, playerName, score, setReportData, setSessionRankings]);
 
     // Resposta via drop
     const handleDrop = useCallback((role) => {
-        if (!currentCall || feedback || !gameConfig) return;
+        if (!currentCall || feedback || !gameConfig || isAnsweringRef.current) return;
+        isAnsweringRef.current = true;
         clearInterval(timerRef.current);
         const timeSpent = gameConfig.timePerCall - timeLeft;
         const currentCallIndex = (callIndices ?? [])[callIndex - 1] ?? (callIndex - 1);
         const isCorrect = role === currentCall.role;
         const answersCount = answersLog.length + 1;
-        const newScore = isCorrect ? score + 100 : score;
+        const previousCorrectCount = answersLog.filter(a => a.isCorrect).length;
+        const correctCount = isCorrect ? previousCorrectCount + 1 : previousCorrectCount;
+        const newScore = correctCount * 100;
         const newLives = isCorrect ? lives : lives - 1;
-        const correctCount = isCorrect ? (score / 100) + 1 : (score / 100);
 
         if (isCorrect) {
             dispatch({ type: 'CORRECT_ANSWER', chosenRole: role, callIndex: currentCallIndex, timeSpent });
@@ -297,7 +305,7 @@ export default function Game() {
         }
 
         emitProgress(newScore, newLives, answersCount, correctCount);
-    }, [currentCall, feedback, gameConfig, timeLeft, callIndices, callIndex, answersLog.length, score, lives, emitProgress]);
+    }, [currentCall, feedback, gameConfig, timeLeft, callIndices, callIndex, answersLog, lives, emitProgress]);
 
     // Continuar após feedback
     function handleContinue() {
@@ -305,6 +313,7 @@ export default function Game() {
         if (lives <= 0 || remainingCalls <= 0) {
             dispatch({ type: 'END_GAME' });
         } else {
+            isAnsweringRef.current = false;
             dispatch({ type: 'LOAD_CALL', timePerCall: gameConfig.timePerCall });
         }
     }
@@ -363,7 +372,10 @@ export default function Game() {
             touchCloneRef.current = null;
 
             const zone = el?.closest('.drop-zone');
-            if (zone) handleDrop(zone.dataset.role);
+            if (zone) {
+                e.preventDefault();
+                handleDrop(zone.dataset.role);
+            }
         }
 
         card.addEventListener('touchstart', onTouchStart, { passive: false });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { connectToSession, disconnectSocket, getSocket } from '../services/socket.js';
@@ -8,6 +8,15 @@ const DIFFICULTIES = [
     { key: 'pleno',  label: 'Pleno',   desc: '8 chamados · 20s · 3 vidas' },
     { key: 'senior', label: 'Sênior',  desc: '12 chamados · 15s · 2 vidas' },
 ];
+
+const ROLE_CONFIG = {
+    frontend: { label: 'Frontend', color: '#3b82f6', icon: '💻' },
+    backend:  { label: 'Backend',  color: '#22c55e', icon: '⚙️' },
+    devops:   { label: 'DevOps',   color: '#f97316', icon: '🚀' },
+    ux:       { label: 'UX/UI',    color: '#a855f7', icon: '🎨' },
+    qa:       { label: 'QA',       color: '#eab308', icon: '🔍' },
+    data:     { label: 'Dados',    color: '#06b6d4', icon: '📊' },
+};
 
 const roleLabels = {
     frontend: 'Frontend', backend: 'Backend', devops: 'DevOps',
@@ -24,6 +33,91 @@ export default function Teacher() {
     const [report, setReport]         = useState(null);
     const [error, setError]           = useState('');
     const [loading, setLoading]       = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterTier, setFilterTier] = useState('all'); // 'all' | 'high' | 'mid' | 'low'
+
+    const reportMetrics = useMemo(() => {
+        if (!report) return null;
+
+        const roles = ['frontend', 'backend', 'devops', 'ux', 'qa', 'data'];
+
+        const specialtyStats = roles.map(role => {
+            const catData = report.classAverage?.byCategory?.[role] || { correct: 0, total: 0 };
+            const correct = catData.correct || 0;
+            const total   = catData.total || 0;
+            const errors  = Math.max(0, total - correct);
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            let statusKey = 'empty';
+            let statusLabel = 'Sem dados';
+            if (total > 0) {
+                if (accuracy >= 80) {
+                    statusKey = 'excelencia';
+                    statusLabel = 'Excelência';
+                } else if (accuracy >= 60) {
+                    statusKey = 'bom';
+                    statusLabel = 'Bom';
+                } else {
+                    statusKey = 'atencao';
+                    statusLabel = 'Atenção';
+                }
+            }
+
+            return {
+                key: role,
+                label: ROLE_CONFIG[role]?.label || role,
+                icon: ROLE_CONFIG[role]?.icon || '📌',
+                color: ROLE_CONFIG[role]?.color || '#38bdf8',
+                correct,
+                errors,
+                total,
+                accuracy,
+                statusKey,
+                statusLabel,
+            };
+        });
+
+        const activeStats = specialtyStats.filter(s => s.total > 0);
+        let bestSpecialty = null;
+        let focusSpecialty = null;
+
+        if (activeStats.length > 0) {
+            const sortedByAcc = [...activeStats].sort((a, b) => b.accuracy - a.accuracy || b.total - a.total);
+            bestSpecialty = sortedByAcc[0];
+            focusSpecialty = sortedByAcc[sortedByAcc.length - 1];
+        }
+
+        const totalPlayers = report.players.length || 1;
+        const highPlayers  = report.players.filter(p => p.accuracy >= 70);
+        const midPlayers   = report.players.filter(p => p.accuracy >= 50 && p.accuracy < 70);
+        const lowPlayers   = report.players.filter(p => p.accuracy < 50);
+
+        const tiers = {
+            high: { count: highPlayers.length, pct: Math.round((highPlayers.length / totalPlayers) * 100) },
+            mid:  { count: midPlayers.length,  pct: Math.round((midPlayers.length / totalPlayers) * 100) },
+            low:  { count: lowPlayers.length,  pct: Math.round((lowPlayers.length / totalPlayers) * 100) },
+        };
+
+        return {
+            specialtyStats,
+            bestSpecialty,
+            focusSpecialty,
+            tiers,
+        };
+    }, [report]);
+
+    const filteredPlayers = useMemo(() => {
+        if (!report?.players) return [];
+        return report.players.filter(p => {
+            const matchesName = p.name.toLowerCase().includes(searchTerm.toLowerCase().trim());
+            if (!matchesName) return false;
+
+            if (filterTier === 'high') return p.accuracy >= 70;
+            if (filterTier === 'mid') return p.accuracy >= 50 && p.accuracy < 70;
+            if (filterTier === 'low') return p.accuracy < 50;
+            return true;
+        });
+    }, [report?.players, searchTerm, filterTier]);
 
     const loadReport = useCallback(async () => {
         if (!session?.code) return;
@@ -269,68 +363,272 @@ export default function Teacher() {
         </main>
     );
 
-    if (view === 'report' && report) return (
-        <main className="ranking-page">
-            <div className="ranking-container">
-                <div className="ranking-header">
-                    <h1 className="ranking-title">Relatório da Turma</h1>
-                    <p className="ranking-subtitle">
-                        {report.levelName} · {report.totalPlayers} aluno{report.totalPlayers !== 1 ? 's' : ''}
-                    </p>
-                </div>
+    function handlePrintPDF() {
+        window.print();
+    }
 
-                {/* Média da turma */}
-                <div className="teacher-avg-card">
-                    <div className="teacher-avg-card__col">
-                        <span className="teacher-avg-card__label">Média de pontos</span>
-                        <span className="teacher-avg-card__val">{report.classAverage.score} <small>pts</small></span>
-                    </div>
-                    <div className="teacher-avg-card__divider" />
-                    <div className="teacher-avg-card__col">
-                        <span className="teacher-avg-card__label">Taxa de acerto</span>
-                        <span className="teacher-avg-card__val">{report.classAverage.accuracy}<small>%</small></span>
-                    </div>
-                </div>
+    if (view === 'report' && report) {
+        const { specialtyStats, bestSpecialty, focusSpecialty, tiers } = reportMetrics || {};
 
-                {/* Cards por aluno */}
-                <div className="teacher-players">
-                    {report.players.map((p, i) => (
-                        <div key={i} className="teacher-player-card">
-                            <div className="teacher-player-card__header">
-                                <span className="teacher-player-card__name">{p.name}</span>
-                                <span className="teacher-player-card__score">{p.score} pts · {p.accuracy}%</span>
+        return (
+            <main className="ranking-page teacher-report-page">
+                <div className="ranking-container teacher-report-container">
+
+                    {/* Header & Quick Actions */}
+                    <header className="report-header-redesign">
+                        <div className="report-title-group">
+                            <div className="report-badge-row">
+                                <span className="report-level-badge">{report.levelName}</span>
+                                {report.code && <span className="report-code-badge">Código: #{report.code}</span>}
                             </div>
-                            <div className="teacher-category-grid">
-                                {Object.entries(p.byCategory).map(([role, stats]) => {
-                                    const isEmpty = stats.total === 0;
-                                    const isAll   = !isEmpty && stats.correct === stats.total;
-                                    const isNone  = !isEmpty && stats.correct === 0;
-                                    return (
-                                        <div
-                                            key={role}
-                                            className={`teacher-cat${isEmpty ? ' teacher-cat--empty' : isAll ? ' teacher-cat--ok' : isNone ? ' teacher-cat--fail' : ' teacher-cat--partial'}`}
-                                        >
-                                            <span className="teacher-cat__role">{roleLabels[role]}</span>
-                                            <span className="teacher-cat__score">{stats.correct}/{stats.total}</span>
+                            <h1 className="ranking-title">Relatório da Turma</h1>
+                            <p className="ranking-subtitle">
+                                Desempenho geral da turma e domínio por área técnica
+                            </p>
+                        </div>
+                        <div className="report-top-actions no-print">
+                            <button className="btn btn-pdf" onClick={handlePrintPDF}>
+                                📄 Baixar PDF
+                            </button>
+                            <button className="btn primary" onClick={handleReset}>
+                                Nova Sessão
+                            </button>
+                            <button className="btn secondary" onClick={() => { disconnectSocket(); navigate('/'); }}>
+                                Menu Principal
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* 1. TOP KPI GRID */}
+                    <section className="teacher-kpi-grid">
+                        <div className="kpi-card">
+                            <span className="kpi-card__icon">👥</span>
+                            <span className="kpi-card__val">{report.totalPlayers}</span>
+                            <span className="kpi-card__label">Alunos</span>
+                        </div>
+                        <div className="kpi-card">
+                            <span className="kpi-card__icon">🏆</span>
+                            <span className="kpi-card__val">{report.classAverage.score} <small>pts</small></span>
+                            <span className="kpi-card__label">Média Pontos</span>
+                        </div>
+                        <div className="kpi-card">
+                            <span className="kpi-card__icon">🎯</span>
+                            <span className="kpi-card__val">{report.classAverage.accuracy}%</span>
+                            <span className="kpi-card__label">Precisão Geral</span>
+                        </div>
+                        <div className="kpi-card kpi-card--highlight-success">
+                            <span className="kpi-card__icon">🌟</span>
+                            <span className="kpi-card__val">{bestSpecialty?.label || '-'}</span>
+                            <span className="kpi-card__sub">{bestSpecialty ? `${bestSpecialty.accuracy}% acerto` : 'Sem dados'}</span>
+                            <span className="kpi-card__label">Destaque da Turma</span>
+                        </div>
+                        <div className="kpi-card kpi-card--highlight-warning">
+                            <span className="kpi-card__icon">⚠️</span>
+                            <span className="kpi-card__val">{focusSpecialty?.label || '-'}</span>
+                            <span className="kpi-card__sub">{focusSpecialty ? `${focusSpecialty.accuracy}% acerto` : 'Sem dados'}</span>
+                            <span className="kpi-card__label">Ponto de Atenção</span>
+                        </div>
+                    </section>
+
+                    {/* 2. INSIGHT PEDAGÓGICO */}
+                    {bestSpecialty && focusSpecialty && (
+                        <section className="teacher-insight-card">
+                            <div className="teacher-insight-card__header">
+                                <span className="teacher-insight-card__badge">💡 Feedback Pedagógico para o Professor</span>
+                            </div>
+                            <p className="teacher-insight-card__text">
+                                A turma obteve o maior domínio na especialidade <strong>{bestSpecialty.icon} {bestSpecialty.label}</strong> com <strong>{bestSpecialty.accuracy}%</strong> de taxa de acerto.
+                                {bestSpecialty.key !== focusSpecialty.key ? (
+                                    <> Por outro lado, a maior concentração de erros ocorreu em <strong>{focusSpecialty.icon} {focusSpecialty.label}</strong> (<strong>{focusSpecialty.accuracy}%</strong> de acerto). Vale revisar os conceitos dessa área na próxima aula!</>
+                                ) : (
+                                    <> Parabéns! A turma manteve consistência ao longo da sessão.</>
+                                )}
+                            </p>
+                        </section>
+                    )}
+
+                    {/* 3. GRÁFICO VISUAL: ERROS E ACERTOS POR ATUAÇÃO */}
+                    <section className="teacher-section">
+                        <div className="section-header-wrap">
+                            <h2 className="section-title">Erros e Acertos por Atuação</h2>
+                            <p className="section-desc">Detalhamento proporcional do desempenho da turma em cada especialidade</p>
+                        </div>
+
+                        <div className="specialty-grid">
+                            {specialtyStats.map(stat => (
+                                <div key={stat.key} className="specialty-card" style={{ '--role-color': stat.color }}>
+                                    <div className="specialty-card__header">
+                                        <div className="specialty-card__title">
+                                            <span className="specialty-card__icon">{stat.icon}</span>
+                                            <strong>{stat.label}</strong>
                                         </div>
-                                    );
-                                })}
+                                        <span className={`status-pill status-pill--${stat.statusKey}`}>
+                                            {stat.statusLabel}
+                                        </span>
+                                    </div>
+
+                                    {/* Barra visual proporcional: Verde (Acertos) vs Vermelho (Erros) */}
+                                    <div className="specialty-bar-wrap" title={`Acertos: ${stat.correct} | Erros: ${stat.errors}`}>
+                                        {stat.total > 0 ? (
+                                            <>
+                                                <div
+                                                    className="specialty-bar__correct"
+                                                    style={{ width: `${stat.accuracy}%` }}
+                                                />
+                                                <div
+                                                    className="specialty-bar__error"
+                                                    style={{ width: `${100 - stat.accuracy}%` }}
+                                                />
+                                            </>
+                                        ) : (
+                                            <div className="specialty-bar__empty" style={{ width: '100%' }} />
+                                        )}
+                                    </div>
+
+                                    <div className="specialty-card__metrics">
+                                        <span className="metric-tag metric-tag--correct">
+                                            <span className="dot dot--green"></span> Acertos: <strong>{stat.correct}</strong>
+                                        </span>
+                                        <span className="metric-tag metric-tag--error">
+                                            <span className="dot dot--red"></span> Erros: <strong>{stat.errors}</strong>
+                                        </span>
+                                        <span className="metric-tag metric-tag--total">
+                                            Aproveitamento: <strong>{stat.accuracy}%</strong> ({stat.total} chamados)
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 4. DISTRIBUIÇÃO E FILTRO DE ALUNOS */}
+                    <section className="teacher-section">
+                        <div className="section-header-wrap">
+                            <h2 className="section-title">Desempenho dos Alunos ({report.totalPlayers})</h2>
+                            <p className="section-desc">Visão consolidada por nível de domínio e pesquisa de alunos</p>
+                        </div>
+
+                        {/* Tier distribution cards */}
+                        <div className="tier-distribution-grid">
+                            <div
+                                className={`tier-card tier-card--high ${filterTier === 'high' ? 'active' : ''}`}
+                                onClick={() => setFilterTier(filterTier === 'high' ? 'all' : 'high')}
+                            >
+                                <span className="tier-card__count">{tiers?.high.count || 0}</span>
+                                <span className="tier-card__label">Domínio Alto (≥70%)</span>
+                                <span className="tier-card__pct">{tiers?.high.pct || 0}% da turma</span>
+                            </div>
+                            <div
+                                className={`tier-card tier-card--mid ${filterTier === 'mid' ? 'active' : ''}`}
+                                onClick={() => setFilterTier(filterTier === 'mid' ? 'all' : 'mid')}
+                            >
+                                <span className="tier-card__count">{tiers?.mid.count || 0}</span>
+                                <span className="tier-card__label">Domínio Médio (50-69%)</span>
+                                <span className="tier-card__pct">{tiers?.mid.pct || 0}% da turma</span>
+                            </div>
+                            <div
+                                className={`tier-card tier-card--low ${filterTier === 'low' ? 'active' : ''}`}
+                                onClick={() => setFilterTier(filterTier === 'low' ? 'all' : 'low')}
+                            >
+                                <span className="tier-card__count">{tiers?.low.count || 0}</span>
+                                <span className="tier-card__label">Necessita Suporte (&lt;50%)</span>
+                                <span className="tier-card__pct">{tiers?.low.pct || 0}% da turma</span>
                             </div>
                         </div>
-                    ))}
-                </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '0' }}>
-                    <button className="btn primary ranking-btn-leave" onClick={handleReset}>
-                        Nova Sessão
-                    </button>
-                    <button className="btn secondary ranking-btn-leave" onClick={() => { disconnectSocket(); navigate('/'); }}>
-                        Menu Principal
-                    </button>
+                        {/* Search & filter toolbar */}
+                        <div className="student-filter-bar">
+                            <div className="student-search-wrap">
+                                <span className="search-icon">🔍</span>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar aluno pelo nome..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="student-search-input"
+                                />
+                                {searchTerm && (
+                                    <button className="clear-search-btn" onClick={() => setSearchTerm('')}>✕</button>
+                                )}
+                            </div>
+
+                            <div className="filter-pill-group">
+                                <button
+                                    className={`filter-pill ${filterTier === 'all' ? 'active' : ''}`}
+                                    onClick={() => setFilterTier('all')}
+                                >
+                                    Todos ({report.totalPlayers})
+                                </button>
+                                <button
+                                    className={`filter-pill filter-pill--high ${filterTier === 'high' ? 'active' : ''}`}
+                                    onClick={() => setFilterTier('high')}
+                                >
+                                    ≥ 70%
+                                </button>
+                                <button
+                                    className={`filter-pill filter-pill--mid ${filterTier === 'mid' ? 'active' : ''}`}
+                                    onClick={() => setFilterTier('mid')}
+                                >
+                                    50-69%
+                                </button>
+                                <button
+                                    className={`filter-pill filter-pill--low ${filterTier === 'low' ? 'active' : ''}`}
+                                    onClick={() => setFilterTier('low')}
+                                >
+                                    &lt; 50%
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Student cards grid */}
+                        <div className="teacher-players-grid">
+                            {filteredPlayers.map((p, i) => (
+                                <div key={i} className="teacher-player-card-redesign">
+                                    <div className="player-card-main-info">
+                                        <div className="player-avatar">{p.name.charAt(0).toUpperCase()}</div>
+                                        <div className="player-name-wrap">
+                                            <span className="player-name">{p.name}</span>
+                                            <span className="player-rank-position">Pontuação total: <strong>{p.score} pts</strong></span>
+                                        </div>
+                                        <div className="player-score-badges">
+                                            <span className={`player-acc-tag ${p.accuracy >= 70 ? 'acc--high' : p.accuracy >= 50 ? 'acc--mid' : 'acc--low'}`}>
+                                                {p.accuracy}% acerto
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="teacher-category-grid">
+                                        {Object.entries(p.byCategory).map(([role, stats]) => {
+                                            const isEmpty = stats.total === 0;
+                                            const isAll   = !isEmpty && stats.correct === stats.total;
+                                            const isNone  = !isEmpty && stats.correct === 0;
+                                            return (
+                                                <div
+                                                    key={role}
+                                                    className={`teacher-cat${isEmpty ? ' teacher-cat--empty' : isAll ? ' teacher-cat--ok' : isNone ? ' teacher-cat--fail' : ' teacher-cat--partial'}`}
+                                                    title={`${ROLE_CONFIG[role]?.label || role}: ${stats.correct} acertos de ${stats.total} chamados`}
+                                                >
+                                                    <span className="teacher-cat__role">{ROLE_CONFIG[role]?.icon} {ROLE_CONFIG[role]?.label || role}</span>
+                                                    <span className="teacher-cat__score">{stats.correct}/{stats.total}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {filteredPlayers.length === 0 && (
+                                <div className="no-students-found">
+                                    <p>Nenhum aluno encontrado para os filtros selecionados.</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
                 </div>
-            </div>
-        </main>
-    );
+            </main>
+        );
+    }
 
     return null;
 }
