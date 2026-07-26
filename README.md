@@ -1,91 +1,90 @@
-# BNCC Play
+# Tech Squad Manager 🎮
 
-Plataforma educacional gamificada voltada ao apoio do ensino de Computação na Educação Básica, alinhada às diretrizes da BNCC Computação.
+> **Gamificação das Profissões de TI**
 
----
-
-# Sobre o Projeto
-
-O **BNCC Play** é uma plataforma desenvolvida para auxiliar professores e estudantes no processo de aprendizagem de conteúdos relacionados à Computação de forma dinâmica, acessível e gamificada.
-
-O sistema organiza atividades, perguntas, desafios e conteúdos pedagógicos com base nos eixos da BNCC Computação, permitindo que o professor selecione previamente o eixo desejado antes do início das atividades.
-
-A proposta busca fortalecer competências como:
-
-* Pensamento computacional
-* Resolução de problemas
-* Raciocínio lógico
-* Aprendizagem ativa
-* Gamificação educacional
-
-Além disso, o projeto considera princípios de UX/UI para oferecer uma experiência simples, intuitiva e acessível em ambiente escolar.
+Plataforma educacional e jogo interativo voltado ao apoio do ensino técnico e superior em Informática e Tecnologia da Informação, apresentando de forma prática e divertida as principais áreas de atuação profissional do mercado de TI.
 
 ---
 
-# Objetivos
+## 📌 Sobre o Projeto
 
-* Apoiar o ensino de Computação na Educação Básica
-* Tornar as aulas mais interativas e gamificadas
-* Facilitar a organização pedagógica dos conteúdos
-* Incentivar a participação ativa dos estudantes
-* Permitir expansão modular baseada na BNCC Computação
+O **Tech Squad Manager** é um jogo educacional desenvolvido para auxiliar estudantes a compreenderem o ecossistema de funções e responsabilidades dentro de uma equipe de tecnologia.
 
----
+O sistema simula o dia a dia do gerenciamento de chamados de suporte e desenvolvimento, permitindo que os alunos pratiquem o reconhecimento de competências de cada perfil profissional de forma dinâmica, ativa e gamificada.
 
-# Principais Funcionalidades
-
-* Seleção de eixo da BNCC Computação
-* Organização de conteúdos por eixo temático
-* Sistema gamificado de perguntas e respostas
-* Cadastro dinâmico de questões
-* Organização de questões por categorias
-* Níveis de dificuldade
-* Filtragem de conteúdos conforme o eixo escolhido
-* Interface voltada para professores e estudantes
-* Estrutura modular e escalável
-* Plataforma de apoio pedagógico
+### 🎯 Objetivos
+* Apresentar o mercado de trabalho de TI e suas especialidades de forma prática.
+* Desenvolver a tomada de decisão e resolução de problemas em equipe.
+* Estimular a aprendizagem ativa e engajadora por meio da gamificação.
+* Apoiar professores e instrutores em atividades pedagógicas interativas.
 
 ---
 
-# Tecnologias Utilizadas
+## 🕹️ Como Jogar
 
-## Frontend
-
-* React
-* Vite
-* React Router DOM
-* Socket.IO Client
-
-## Backend
-
-* Node.js
-* Express
-* Socket.IO
-* Prisma ORM
-
-## Banco de Dados
-
-* PostgreSQL
+1. **Assuma a Gerência:** Você assume o papel de **Gerente de Equipe de TI**.
+2. **Receba os Chamados:** Chamados de suporte e demandas técnicas chegam continuamente à sua tela.
+3. **Delegue ao Profissional Correto:** Analise a descrição da demanda e direcione o chamado para uma das áreas especializadas:
+   * 🎨 **UX/UI Design:** Interfaces, prototipagem, usabilidade e experiência do usuário.
+   * 💻 **Frontend:** Telas, componentes visuais, interatividade e integração web.
+   * ⚙️ **Backend:** APIs, regras de negócio, banco de dados e arquitetura de servidores.
+   * 🛠️ **DevOps:** CI/CD, infraestrutura em nuvem, automação e servidores.
+   * 🧪 **QA (Quality Assurance):** Testes de software, garantia de qualidade e identificação de bugs.
+   * 📊 **Dados (Data/BI):** Análise de dados, pipelines, dashboards e engenharia de dados.
+4. **Pontue e Sobreviva:** Cada delegação correta aumenta sua pontuação final. Cuidado: **erros custam vidas!**
 
 ---
 
-# Estrutura do Projeto
+## ✨ Principais Funcionalidades
 
-```text id="0zy6t4"
-BNCC-Play/
+* 🚀 **Comunicação em Tempo Real:** Conexão instantânea via WebSockets (Socket.IO).
+* 🎮 **Salas e Sessões Multiplayer:** Criação e ingresso em partidas através de códigos únicos.
+* ⚙️ **Configuração de Dificuldade:** Ajuste de número de chamados, tempo por rodada e quantidade de vidas.
+* 📊 **Feedback e Histórico:** Relatório detalhado das respostas ao final de cada partida para revisão pedagógica.
+* 📱 **Interface Intuitiva:** Design focado em UX/UI com visual moderno e responsivo.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+* **[React 18](https://react.dev/)** — Biblioteca para construção de interfaces web
+* **[Vite](https://vitejs.dev/)** — Build tool rápida e otimizada
+* **[React Router DOM](https://reactrouter.com/)** — Roteamento dinâmico no cliente
+* **[Socket.IO Client](https://socket.io/)** — Cliente WebSocket para eventos em tempo real
+
+### Backend
+* **[Node.js](https://nodejs.org/)** — Ambiente de execução JavaScript
+* **[Express](https://expressjs.com/)** — Framework web minimalista
+* **[Socket.IO](https://socket.io/)** — Comunicação bidirecional em tempo real
+* **[Prisma ORM](https://www.prisma.io/)** — Mapeamento objeto-relacional moderno
+
+### Banco de Dados
+* **[PostgreSQL](https://www.postgresql.org/)** — Banco de dados relacional robusto
+
+---
+
+## 📁 Estrutura do Projeto
+
+```text
+Tech-Squad-Manager/
 ├── frontend/
 │   ├── src/
-│   ├── public/
+│   │   ├── components/      # Componentes reutilizáveis
+│   │   ├── pages/           # Páginas principais (Home, Game, About, etc.)
+│   │   ├── services/        # Configuração de Socket e chamadas de API
+│   │   └── App.jsx
+│   ├── public/              # Ativos estáticos
+│   ├── vite.config.js       # Configuração do Vite e Proxy
 │   └── package.json
 │
 ├── backend/
-│   ├── prisma/
+│   ├── prisma/              # Migrações e Schema do Prisma
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── lib/
-│   │   ├── routes/
-│   │   ├── socket/
-│   │   └── server.js
+│   │   ├── controllers/     # Lógica de controle dos endpoints
+│   │   ├── socket/          # Manipuladores de eventos WebSocket
+│   │   └── server.js        # Ponto de entrada do servidor
+│   ├── .env.example
 │   └── package.json
 │
 └── README.md
@@ -93,188 +92,106 @@ BNCC-Play/
 
 ---
 
-# UX/UI
+## 🚀 Como Executar o Projeto
 
-O projeto considera princípios de UX/UI para garantir:
-
-* Facilidade de uso
-* Navegação intuitiva
-* Organização visual clara
-* Boa experiência em ambiente escolar
-* Interface acessível para alunos e professores
+### Pré-requisitos
+* **Node.js** (versão 18 ou superior)
+* **PostgreSQL** instalado e em execução
+* Gerenciador de pacotes **npm** ou **yarn**
 
 ---
 
-# Futuras Melhorias
+### 1. Clonar o Repositório
 
-* Ranking de jogadores/alunos
-* Sistema de pontuação e recompensas
-* Dashboard pedagógico
-* Relatórios de desempenho
-* Multiplayer em sala
-* Integração com plataformas educacionais
-* Exportação de relatórios
-* Sistema de turmas
-* Autenticação de professores e alunos
-
----
-
-# Como Executar o Projeto
-
-## Pré-requisitos
-
-* Node.js 18+
-* PostgreSQL
-* npm ou yarn
-
----
-
-# Clonar o Repositório
-
-```bash id="jlwmif"
-git clone https://github.com/NatanCesar/BNCC-Play.git
-
-cd BNCC-Play
+```bash
+git clone https://github.com/NatanCesar/Tech-Squad-Manager.git
+cd Tech-Squad-Manager
 ```
 
 ---
 
-# Backend
+### 2. Configurar e Executar o Backend
 
-## Acessar pasta
+1. Entre na pasta do backend:
+   ```bash
+   cd backend
+   ```
 
-```bash id="fkgqyf"
-cd backend
-```
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-## Instalar dependências
+3. Crie o arquivo `.env` baseado no `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash id="5v2m87"
-npm install
-```
+4. Ajuste a variável `DATABASE_URL` no `.env` com suas credenciais do PostgreSQL:
+   ```env
+   DATABASE_URL="postgresql://usuario:senha@localhost:5432/tech_squad_manager"
+   FRONTEND_ORIGIN="*"
+   PORT=3001
+   ```
 
-## Configurar variáveis de ambiente
+5. Execute as migrações do banco de dados e gere o cliente Prisma:
+   ```bash
+   npm run db:migrate
+   ```
 
-Crie um arquivo `.env` na pasta `backend`:
-
-```env id="psuz7z"
-DATABASE_URL="postgresql://user:password@localhost:5432/bncc_play"
-
-PORT=3001
-
-FRONTEND_ORIGIN=http://localhost:5173
-```
-
----
-
-## Gerar cliente Prisma
-
-```bash id="t67g2m"
-npm run db:generate
-```
-
----
-
-## Executar migrations
-
-```bash id="vukn10"
-npm run db:migrate
-```
+6. Inicie o servidor em modo de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+   > O servidor estará rodando em `http://localhost:3001`
 
 ---
 
-## Iniciar backend
+### 3. Configurar e Executar o Frontend
 
-```bash id="3of6p6"
-npm run dev
-```
+1. Abra um novo terminal e acesse a pasta do frontend:
+   ```bash
+   cd frontend
+   ```
 
-Servidor disponível em:
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-```text id="4y5ccm"
-http://localhost:3001
-```
-
----
-
-# Frontend
-
-## Acessar pasta
-
-```bash id="h0hhq4"
-cd frontend
-```
-
-## Instalar dependências
-
-```bash id="q4qaqn"
-npm install
-```
-
-## Executar aplicação
-
-```bash id="4mrmkk"
-npm run dev
-```
-
-Frontend disponível em:
-
-```text id="65q3xr"
-http://localhost:5173
-```
+3. Inicie a aplicação React:
+   ```bash
+   npm run dev
+   ```
+   > A aplicação estará disponível em `http://localhost:5173/Tech-Squad-Manager/`
 
 ---
 
-# Scripts Disponíveis
+## 📜 Scripts Disponíveis
 
-## Backend
+### Backend
+* `npm run dev`: Inicia o servidor com reload automático (`node --watch`).
+* `npm start`: Inicia o servidor em modo produção.
+* `npm run db:migrate`: Executa as migrações do Prisma no banco de dados.
+* `npm run db:generate`: Atualiza o Prisma Client.
+* `npm run db:studio`: Abre a interface visual do Prisma Studio.
 
-```bash id="n4m9j5"
-npm run dev
-npm start
-npm run db:migrate
-npm run db:generate
-npm run db:studio
-```
-
----
-
-# Contribuição
-
-Contribuições são bem-vindas.
-
-## Passos
-
-1. Faça um fork do projeto
-
-2. Crie uma branch:
-
-```bash id="1jdr6k"
-git checkout -b feature/minha-feature
-```
-
-3. Commit suas alterações:
-
-```bash id="k9b4h9"
-git commit -m "feat: minha nova feature"
-```
-
-4. Envie para sua branch:
-
-```bash id="1olr6n"
-git push origin feature/minha-feature
-```
-
-5. Abra um Pull Request
+### Frontend
+* `npm run dev`: Inicia o servidor de desenvolvimento do Vite.
+* `npm run build`: Compila o projeto para produção.
+* `npm run preview`: Visualiza o build de produção localmente.
 
 ---
 
-# Licença
+## 👨‍💻 Autores & Contexto Acadêmico
 
-Este projeto está sob a licença MIT.
+* **Desenvolvedor:** Nataniel Cesar da Silva
+* **Instituição:** Universidade Federal da Paraíba (UFPB) — Campus IV, Rio Tinto (2025)
+* **Curso:** Bacharelado em Ciência da Computação
+* **Disciplina:** Estágio Supervisionado III
 
 ---
 
-# Autor
+## 📄 Licença
 
-Desenvolvido por Nataniel Cesar, Diogo Mendonça de Almeida Oliveira, Fernanda Rodrigues da Silva, Gustavo Coutinho Soares, Luiz Gustavo dos Santos Silva e Marcos Antonio Jose da Silva.
+Este projeto é distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
