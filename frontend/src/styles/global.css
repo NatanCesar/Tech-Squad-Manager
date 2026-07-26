@@ -74,7 +74,9 @@ body {
 }
 
 .menu-page {
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 24px 16px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -103,11 +105,14 @@ body {
     box-shadow:
         0 0 40px rgba(0, 255, 255, 0.12),
         0 8px 32px rgba(0, 0, 0, 0.6);
-    width: 420px;
+    width: 100%;
+    max-width: 420px;
 }
 
 .logo {
     width: 352px;
+    max-width: 100%;
+    height: auto;
     margin-bottom: 6px;
     animation: logoPulse 3s ease-in-out infinite;
 }
@@ -605,7 +610,8 @@ body {
     background: linear-gradient(145deg, #0f1f3d, #1e293b);
     padding: 28px 28px 20px;
     border-radius: 14px;
-    width: 380px;
+    width: 100%;
+    max-width: 380px;
     margin: auto;
     cursor: grab;
     border: 1px solid rgba(0, 255, 255, 0.2);
@@ -730,6 +736,7 @@ body {
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(4px);
+    padding: 16px;
 }
 
 .modal-content {
@@ -737,7 +744,11 @@ body {
     padding: 32px;
     border-radius: 16px;
     text-align: center;
-    width: 420px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
 
@@ -1781,17 +1792,163 @@ body {
     margin-top: 8px;
 }
 
-/* ===== Responsive styles for Ranking screens ===== */
+/* ===== Responsive styles for all screens ===== */
 @media (max-width: 640px) {
-    .ranking-page {
-        padding: 20px 10px;
+    /* Base containers */
+    .menu-page,
+    .difficulty-page,
+    .report-page,
+    .ranking-page,
+    .about-page {
+        padding: 16px 10px;
     }
 
-    .ranking-container {
+    .menu-container,
+    .report-container,
+    .ranking-container,
+    .about-container,
+    .difficulty-container {
         padding: 20px 14px;
         border-radius: 12px;
     }
 
+    .menu-subtitle {
+        font-size: 0.82rem;
+        margin-bottom: 16px;
+    }
+
+    .logo {
+        max-width: 280px;
+    }
+
+    /* Game & HUD */
+    .game-container {
+        padding: 14px 10px;
+    }
+
+    .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px 6px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
+
+    .hud-divider {
+        display: none;
+    }
+
+    .hud-stat {
+        padding: 2px 0;
+    }
+
+    .hud-value {
+        font-size: 0.88rem;
+    }
+
+    .hud-label {
+        font-size: 0.6rem;
+    }
+
+    /* Call Card */
+    .call-area {
+        margin-bottom: 24px;
+    }
+
+    .call-card {
+        padding: 20px 18px 16px;
+        border-radius: 12px;
+    }
+
+    .call-card p {
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    /* Drop Zones */
+    .team-area {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .drop-zone {
+        padding: 16px 10px;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        border-radius: 10px;
+    }
+
+    /* Difficulty Selection */
+    .difficulty-header {
+        margin-bottom: 24px;
+    }
+
+    .difficulty-container h1 {
+        font-size: 1.3rem;
+    }
+
+    .levels-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .level-card {
+        padding: 20px 16px;
+    }
+
+    /* Feedback Modal */
+    .modal {
+        padding: 12px;
+    }
+
+    .modal-content {
+        padding: 22px 16px;
+        border-radius: 12px;
+    }
+
+    .modal-content h2 {
+        font-size: 0.95rem;
+    }
+
+    .modal-content p {
+        font-size: 0.85rem;
+    }
+
+    /* Report */
+    .report-container {
+        padding: 24px 16px;
+    }
+
+    .report-container h1 {
+        font-size: 1.15rem;
+    }
+
+    .report-stats {
+        padding: 12px 6px;
+    }
+
+    .report-stat-value {
+        font-size: 1rem;
+    }
+
+    .report-stat-label {
+        font-size: 0.62rem;
+    }
+
+    .report-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .report-actions .btn {
+        width: 100%;
+    }
+
+    /* Ranking & Class Ranking */
     .ranking-header {
         margin-bottom: 20px;
         padding-bottom: 14px;
@@ -1885,15 +2042,46 @@ body {
         padding: 11px;
         font-size: 0.72rem;
     }
+
+    /* Teacher Dashboard */
+    .teacher-avg-card {
+        padding: 14px 16px;
+    }
+
+    .teacher-avg-card__divider {
+        margin: 0 12px;
+        height: 32px;
+    }
+
+    .teacher-avg-card__val {
+        font-size: 1.3rem;
+    }
+
+    .teacher-category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
 }
 
 @media (max-width: 380px) {
-    .ranking-page {
+    .menu-page,
+    .difficulty-page,
+    .report-page,
+    .ranking-page,
+    .about-page {
         padding: 12px 6px;
     }
 
-    .ranking-container {
+    .menu-container,
+    .report-container,
+    .ranking-container,
+    .about-container,
+    .difficulty-container {
         padding: 14px 10px;
+    }
+
+    .hud {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .podium-slot {
@@ -1916,6 +2104,15 @@ body {
 
     .ranking-my-score__right {
         text-align: center;
+    }
+
+    .teacher-avg-card {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .teacher-avg-card__divider {
+        display: none;
     }
 }
 

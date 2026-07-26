@@ -68,11 +68,12 @@ export default function Lobby() {
 
                 <p style={{ color: '#94a3b8', marginBottom: '8px' }}>Código da turma:</p>
                 <p style={{
-                    fontSize: '2.5rem',
+                    fontSize: 'clamp(1.8rem, 8vw, 2.5rem)',
                     fontWeight: 'bold',
-                    letterSpacing: '0.3em',
+                    letterSpacing: '0.2em',
                     color: '#38bdf8',
                     marginBottom: '24px',
+                    wordBreak: 'break-all',
                 }}>
                     {sessionCode}
                 </p>

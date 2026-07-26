@@ -149,9 +149,9 @@ export default function Teacher() {
                                 onChange={() => setDifficulty(d.key)}
                                 style={{ accentColor: '#38bdf8' }}
                             />
-                            <div>
+                            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                                 <strong>{d.label}</strong>
-                                <span style={{ color: '#94a3b8', fontSize: '0.85rem', marginLeft: '8px' }}>{d.desc}</span>
+                                <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{d.desc}</span>
                             </div>
                         </label>
                     ))}
@@ -174,7 +174,7 @@ export default function Teacher() {
             <div className="menu-container" style={{ maxWidth: '540px' }}>
                 <h1 className="page-title">Sala de Espera</h1>
                 <p style={{ color: '#94a3b8', marginBottom: '4px' }}>Código para os alunos:</p>
-                <p style={{ fontSize: '3rem', fontWeight: 'bold', letterSpacing: '0.35em', color: '#38bdf8', marginBottom: '8px' }}>
+                <p style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', fontWeight: 'bold', letterSpacing: '0.25em', color: '#38bdf8', marginBottom: '8px', wordBreak: 'break-all' }}>
                     {session.code}
                 </p>
                 <p style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '24px' }}>
