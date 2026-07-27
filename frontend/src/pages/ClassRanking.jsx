@@ -89,12 +89,12 @@ export default function ClassRanking() {
         socket.on('session:all_finished', handleAllFinished);
         socket.on('session:ended', handleEnded);
 
-        // Polling de contingência para redes móveis com oscilação
+        // Polling de contingência para redes locais/móveis com oscilação
         const pollInterval = setInterval(() => {
             if (!allFinished) {
                 fetchRanking();
             }
-        }, 5000);
+        }, 3000);
 
         return () => {
             clearInterval(pollInterval);
@@ -114,6 +114,12 @@ export default function ClassRanking() {
     const top3 = [1, 2, 3].map(pos => rankings.find(r => r.position === pos) ?? null);
     const myRank = rankings.find(r => r.playerId === playerId);
 
+    const displayScore = reportData?.score ?? myRank?.score;
+    const displayTotal = reportData?.totalAnswered ?? myRank?.totalAnswered;
+    const displayCorrect = reportData?.correctAnswers ?? myRank?.correctAnswers;
+    const displayAcc = myRank?.accuracy ?? (reportData?.totalAnswered > 0 ? Math.round((reportData.correctAnswers / reportData.totalAnswered) * 100) : 0);
+    const hasScoreInfo = displayScore !== undefined && displayScore !== null;
+
     return (
         <main className="ranking-page">
             <div className="ranking-container">
@@ -131,7 +137,7 @@ export default function ClassRanking() {
                 </div>
 
                 {/* My score pill */}
-                {reportData && (
+                {hasScoreInfo && (
                     <div className="ranking-my-score">
                         <div className="ranking-my-score__left">
                             <span className="ranking-my-score__label">Sua pontuação</span>
@@ -140,9 +146,9 @@ export default function ClassRanking() {
                             </span>
                         </div>
                         <div className="ranking-my-score__right">
-                            <span className="ranking-my-score__pts">{reportData.score} pts</span>
+                            <span className="ranking-my-score__pts">{displayScore} pts</span>
                             <span className="ranking-my-score__acc">
-                                {reportData.correctAnswers}/{reportData.totalAnswered} corretos · {myRank?.accuracy ?? (reportData.totalAnswered > 0 ? Math.round((reportData.correctAnswers / reportData.totalAnswered) * 100) : 0)}%
+                                {displayCorrect !== undefined && displayTotal ? `${displayCorrect}/${displayTotal} corretos · ` : ''}{displayAcc}%
                             </span>
                         </div>
                     </div>

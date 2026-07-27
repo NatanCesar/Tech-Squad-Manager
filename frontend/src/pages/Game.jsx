@@ -141,20 +141,42 @@ export default function Game() {
         }
     }, [gameConfig, isClassMode, navigate]);
 
+    // Continuar após feedback
+    const handleContinue = useCallback(() => {
+        if (!gameConfig) return;
+        if (lives <= 0 || remainingCalls <= 0) {
+            dispatch({ type: 'END_GAME' });
+        } else {
+            isAnsweringRef.current = false;
+            dispatch({ type: 'LOAD_CALL', timePerCall: gameConfig.timePerCall });
+        }
+    }, [gameConfig, lives, remainingCalls]);
+
+    // Auto-continuar feedback (especialmente quando acaba o tempo ou no fim de jogo)
+    useEffect(() => {
+        if (!feedback) return;
+        const autoTimer = setTimeout(() => {
+            handleContinue();
+        }, (lives <= 0 || remainingCalls <= 0) ? 2500 : 3500);
+        return () => clearTimeout(autoTimer);
+    }, [feedback, lives, remainingCalls, handleContinue]);
+
     // Reconecta socket e escuta eventos no modo turma
     useEffect(() => {
         if (isClassMode && sessionCode && playerId) {
             connectToSession(sessionCode, playerId, 'player');
             const socket = getSocket();
-            const handleEnded = () => {
-                navigate('/class-ranking');
+            const handleSessionDone = () => {
+                dispatch({ type: 'END_GAME' });
             };
-            socket.on('session:ended', handleEnded);
+            socket.on('session:ended', handleSessionDone);
+            socket.on('session:all_finished', handleSessionDone);
             return () => {
-                socket.off('session:ended', handleEnded);
+                socket.off('session:ended', handleSessionDone);
+                socket.off('session:all_finished', handleSessionDone);
             };
         }
-    }, [isClassMode, sessionCode, playerId, navigate]);
+    }, [isClassMode, sessionCode, playerId]);
 
     const orderedCalls = (callIndices && Array.isArray(callIndices)) ? callIndices.map(i => allCalls[i]).filter(Boolean) : null;
     const [state, dispatch] = useReducer(reducer, null, () => buildInitialState(gameConfig, orderedCalls));
@@ -249,16 +271,20 @@ export default function Game() {
 
             if (isClassMode && playerId) {
                 try {
-                    const res = await api.finishPlayer(playerId, {
-                        score: finalScore,
-                        livesLeft: lives,
-                        correctAnswers,
-                        totalAnswered,
-                        answers: answersLog,
-                    });
-                    if (res && res.rankings && isSubscribed) {
-                        setSessionRankings(res.rankings);
-                    }
+                    await Promise.race([
+                        api.finishPlayer(playerId, {
+                            score: finalScore,
+                            livesLeft: lives,
+                            correctAnswers,
+                            totalAnswered,
+                            answers: answersLog,
+                        }).then(res => {
+                            if (res && res.rankings && isSubscribed) {
+                                setSessionRankings(res.rankings);
+                            }
+                        }),
+                        new Promise(resolve => setTimeout(resolve, 3500))
+                    ]);
                 } catch (err) {
                     console.error('Erro ao finalizar jogador:', err);
                 }
@@ -306,17 +332,6 @@ export default function Game() {
 
         emitProgress(newScore, newLives, answersCount, correctCount);
     }, [currentCall, feedback, gameConfig, timeLeft, callIndices, callIndex, answersLog, lives, emitProgress]);
-
-    // Continuar após feedback
-    function handleContinue() {
-        if (!gameConfig) return;
-        if (lives <= 0 || remainingCalls <= 0) {
-            dispatch({ type: 'END_GAME' });
-        } else {
-            isAnsweringRef.current = false;
-            dispatch({ type: 'LOAD_CALL', timePerCall: gameConfig.timePerCall });
-        }
-    }
 
     // Touch support
     useEffect(() => {

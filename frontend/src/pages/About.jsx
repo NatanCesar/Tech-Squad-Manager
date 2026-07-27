@@ -42,6 +42,20 @@ export default function About() {
                     <p>Estágio Supervisionado III — Ciência da Computação</p>
                 </div>
 
+                <div className="about-section">
+                    <h2>Avaliação</h2>
+                    <p>
+                        Ajude-nos a melhorar! Preencha o{' '}
+                        <a
+                            href="https://forms.gle/Eykk3RqbrCoPedCV9"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Formulário de Avaliação
+                        </a>.
+                    </p>
+                </div>
+
                 <button className="btn btn-about btn-back" onClick={() => navigate('/')}>
                     Voltar ao Menu
                 </button>

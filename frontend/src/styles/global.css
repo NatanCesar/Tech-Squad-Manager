@@ -2359,6 +2359,16 @@ body {
     font-size: 0.9rem;
 }
 
+.about-section a {
+    color: #38bdf8;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.about-section a:hover {
+    color: #00ffff;
+}
+
 .about-section p + p {
     margin-top: 4px;
 }
